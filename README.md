@@ -1,93 +1,137 @@
-# Used Car Price Prediction
+# 🚗 Used Car Price Prediction
 
-A machine learning regression project that predicts used car prices from vehicle characteristics such as brand, model, year, mileage, engine information, fuel type, transmission, accident history, and title information.
+> **An end-to-end machine learning regression project focused on predicting used-car prices and analyzing why models succeed or fail.**
 
-## Problem
+## 🎯 Project Overview
 
-Used-car pricing depends on multiple factors, and estimating a reasonable price manually can be difficult.
+Used-car pricing depends on many factors such as vehicle age, mileage, brand, model, engine characteristics, transmission, and vehicle condition.
 
-The goal of this project was to build a regression model that could learn relationships between vehicle characteristics and their market price.
+The goal of this project was not simply to train a model, but to follow a realistic machine learning workflow:
 
-## Dataset
+**Problem → Data → Baseline → Model → Evaluation → Error Analysis → Feature Engineering → Model Comparison**
 
-The project uses a public used-car price dataset containing approximately 4,000 vehicle records.
+The project also demonstrates an important ML engineering principle: **when model performance is limited by the dataset, blindly tuning the model is not always the right solution.**
 
-The dataset contains information such as:
+---
+
+## 🧠 Problem Statement
+
+A used-car business needs a way to estimate vehicle prices from available vehicle information.
+
+Given a vehicle's characteristics, the system attempts to predict its price.
+
+### Input Features
 
 * Brand
 * Model
-* Model year
+* Model Year
 * Mileage
-* Fuel type
-* Engine
+* Engine Size
+* Horsepower
+* Fuel Type
 * Transmission
-* Exterior and interior color
-* Accident history
-* Clean title
-* Price
+* Exterior Color
+* Interior Color
+* Accident History
+* Clean Title
 
-## Data Preparation
+### Target
 
-The raw dataset required several preprocessing steps:
+**Vehicle Price**
 
-* Converted mileage from text such as `51,000 mi.` into numerical values.
-* Converted price values such as `$38,005` into numerical values.
-* Handled missing categorical values using an `Unknown` category.
-* Extracted `engine_size` from engine descriptions.
-* Extracted `horsepower` where available.
+Since price is a continuous numerical value, this is a **regression problem**.
+
+---
+
+## 🛠️ Tech Stack
+
+* **Python**
+* **Pandas** — data manipulation
+* **NumPy** — numerical computation
+* **Matplotlib** — data visualization
+* **Scikit-learn** — preprocessing, modeling and evaluation
+* **Jupyter Notebook** — experimentation and analysis
+* **Git/GitHub** — version control
+
+---
+
+## 🔍 Data Preparation
+
+The raw dataset was not directly ready for machine learning.
+
+I performed the following preprocessing:
+
+* Converted mileage strings such as `51,000 mi.` into numerical values.
+* Converted prices such as `$38,005` into numerical values.
+* Investigated missing values.
+* Replaced missing categorical values with `Unknown`.
+* Extracted **engine size** from unstructured engine descriptions.
+* Extracted **horsepower** where available.
 * Used median imputation for missing numerical engine features.
-* Applied one-hot encoding to categorical features.
+* Applied one-hot encoding to categorical variables.
+* Used a train/test split to evaluate performance on unseen data.
 
-## Machine Learning Approach
+---
 
-The project followed this workflow:
+## 📊 Modeling Approach
 
-1. Understand the real-world problem
-2. Inspect the dataset
-3. Clean the data
-4. Separate features and target
-5. Create a train/test split
-6. Establish a baseline
-7. Train Linear Regression
-8. Analyze prediction errors
-9. Engineer engine-related features
-10. Train Random Forest Regression
-11. Compare model performance
-12. Analyze limitations
-
-## Models and Results
-
-### Baseline
+### 1. Baseline
 
 The baseline predicted the average training-set price for every test vehicle.
 
-* MAE: **35,276**
-* RMSE: **35,276**
-* R²: **-0.002**
+| Metric | Result |
+| ------ | -----: |
+| MAE    | 35,276 |
+| RMSE   | 35,276 |
+| R²     | -0.002 |
 
-### Linear Regression
+This established a reference point before introducing machine learning models.
 
-* MAE: **25,845**
-* RMSE: **137,154**
-* R²: **0.080**
+---
 
-After adding engine size and horsepower:
+### 2. Linear Regression
 
-* MAE: **25,353**
-* RMSE: **135,565**
-* R²: **0.101**
+The first machine learning model achieved:
 
-### Random Forest Regression
+| Metric |  Result |
+| ------ | ------: |
+| MAE    |  25,845 |
+| RMSE   | 137,154 |
+| R²     |   0.080 |
 
-* MAE: **16,433**
-* RMSE: **133,553**
-* R²: **0.127**
+After extracting engine size and horsepower:
 
-Random Forest substantially reduced MAE compared with Linear Regression, showing that nonlinear models captured some pricing relationships better.
+| Metric |  Result |
+| ------ | ------: |
+| MAE    |  25,353 |
+| RMSE   | 135,565 |
+| R²     |   0.101 |
 
-## Error Analysis
+This showed that the engineered engine features provided measurable improvement.
 
-The largest prediction errors came from rare, extremely expensive vehicles such as:
+---
+
+### 3. Random Forest Regression
+
+A nonlinear model was then tested to capture relationships that Linear Regression could not represent effectively.
+
+**Final result:**
+
+| Metric |      Result |
+| ------ | ----------: |
+| MAE    |  **16,433** |
+| RMSE   | **133,553** |
+| R²     |   **0.127** |
+
+Random Forest substantially reduced the average absolute prediction error compared with Linear Regression.
+
+---
+
+## 🔎 Error Analysis
+
+Rather than removing unusual observations simply to improve the metrics, I investigated the largest prediction errors.
+
+The extreme errors included vehicles such as:
 
 * Bugatti Veyron
 * Porsche Carrera GT
@@ -95,40 +139,53 @@ The largest prediction errors came from rare, extremely expensive vehicles such 
 * Dodge Viper
 * Maserati Quattroporte
 
-The dataset contains a strong right-skew in prices, with most vehicles concentrated in the lower price range while a small number of vehicles have prices reaching several million dollars.
+These were not obvious data-entry errors. They represented genuinely rare and extremely expensive vehicles.
 
-This caused very large residuals and heavily affected RMSE.
+The price distribution was also strongly right-skewed, with most vehicles concentrated at substantially lower prices and a small number of vehicles reaching several million dollars.
 
-## Key Learning
+This explains why **RMSE remained very high despite the improvement in MAE**.
 
-The project demonstrated that model performance is strongly influenced by the quality and characteristics of the dataset.
+---
 
-The experiments showed:
+## 💡 What I Learned
 
-* A baseline is necessary for meaningful comparison.
-* Linear Regression was too limited for the nonlinear pricing relationships in this dataset.
-* Feature engineering improved Linear Regression slightly.
-* Random Forest performed better, particularly in MAE.
-* Extreme luxury vehicles created unusually large prediction errors.
-* More complex modeling alone does not solve limitations caused by the underlying dataset.
+This project reinforced several practical machine learning concepts:
 
-## Current Limitation
+### Baselines matter
 
-The final Random Forest model achieved an R² of approximately **0.13**, which is not strong enough to consider this model a reliable production pricing system.
+A model should be compared against a simple baseline rather than judged in isolation.
 
-Rather than continuously tuning models to compensate for the dataset's limitations, the next iteration of this project will use a more suitable used-car dataset with more consistent pricing and feature coverage.
+### Feature engineering matters
 
-## Technologies
+Turning information hidden inside text into useful numerical features can improve model performance.
 
-* Python
-* Pandas
-* NumPy
-* Matplotlib
-* Scikit-learn
-* Jupyter Notebook
-* Git/GitHub
+### Model choice matters
 
-## Project Structure
+Random Forest captured nonlinear pricing relationships better than Linear Regression.
+
+### Metrics tell different stories
+
+MAE improved substantially, while RMSE remained high because of extreme prediction errors.
+
+### More tuning is not always the answer
+
+The experiments showed that the dataset itself was a significant limitation. Instead of endlessly tuning models to compensate for the data, the next iteration should use a more suitable dataset.
+
+---
+
+## ⚠️ Current Limitation
+
+The final model achieved an R² of approximately **0.13**.
+
+This is not strong enough to present the model as a production-ready vehicle pricing system.
+
+Instead of hiding this limitation, the project documents **why the model struggled and what should be improved next**.
+
+The next iteration will use a more consistent used-car dataset with better price distribution and feature coverage.
+
+---
+
+## 📁 Project Structure
 
 ```text
 used-car-price-prediction/
@@ -139,14 +196,40 @@ used-car-price-prediction/
 ├── notebooks/
 │   └── 01_data_analysis.ipynb
 │
-├── src/
-│
+├── output.png
 ├── README.md
 └── requirements.txt
 ```
 
-## Status
+> The dataset is excluded from version control through `.gitignore`.
 
-**Completed as an ML experimentation and problem-analysis project.**
+---
 
-The project intentionally stops before excessive model tuning because the dataset itself became the primary limitation. The next iteration will use a more suitable dataset and focus on building a stronger predictive system.
+## 🚀 Future Improvements
+
+* Use a more suitable used-car dataset
+* Improve feature engineering
+* Compare additional tree-based models
+* Analyze model errors by vehicle price range
+* Build a simple prediction interface
+* Deploy the final model as an API
+
+---
+
+## 👨‍💻 Project Focus
+
+This project was built to demonstrate more than model training.
+
+It focuses on:
+
+**Problem Solving • Data Preparation • Feature Engineering • Model Selection • Evaluation • Error Analysis • Critical Thinking**
+
+The main objective was to understand **why a model performs the way it does**, not simply achieve a high metric.
+
+---
+
+## 📌 Project Status
+
+**Completed — ML experimentation and problem analysis phase**
+
+The current version establishes the complete ML workflow and identifies the dataset as the primary limitation for further improvement.
