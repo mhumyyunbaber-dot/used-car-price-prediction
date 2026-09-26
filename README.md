@@ -1,235 +1,207 @@
-# 🚗 Used Car Price Prediction
+# Used Car Price Prediction
 
-> **An end-to-end machine learning regression project focused on predicting used-car prices and analyzing why models succeed or fail.**
+A machine learning regression project that estimates the selling price of used cars in Pakistan based on vehicle characteristics such as year, engine size, fuel type, transmission, mileage, brand, and model.
 
-## 🎯 Project Overview
+## Problem
 
-Used-car pricing depends on many factors such as vehicle age, mileage, brand, model, engine characteristics, transmission, and vehicle condition.
+Used-car prices vary significantly depending on the vehicle's specifications and model. This project explores whether machine learning can learn pricing patterns from historical Pakistani used-car listings and provide a reasonable price estimate for a given car.
 
-The goal of this project was not simply to train a model, but to follow a realistic machine learning workflow:
+## Dataset
 
-**Problem → Data → Baseline → Model → Evaluation → Error Analysis → Feature Engineering → Model Comparison**
+The project uses a Pakistan used-car dataset containing **60,555 listings** collected from PakWheels.
 
-The project also demonstrates an important ML engineering principle: **when model performance is limited by the dataset, blindly tuning the model is not always the right solution.**
+The raw dataset contains:
 
----
-
-## 🧠 Problem Statement
-
-A used-car business needs a way to estimate vehicle prices from available vehicle information.
-
-Given a vehicle's characteristics, the system attempts to predict its price.
-
-### Input Features
-
-* Brand
-* Model
-* Model Year
-* Mileage
-* Engine Size
-* Horsepower
-* Fuel Type
+* Title
+* Model year
+* Engine size and unit
+* Engine type
 * Transmission
-* Exterior Color
-* Interior Color
-* Accident History
-* Clean Title
+* Kilometers driven
+* Price
 
-### Target
+After removing records without a target price, **59,554 records** were used for modeling.
 
-**Vehicle Price**
+Prices are represented in **Pakistani Rupees (lakh PKR)**.
 
-Since price is a continuous numerical value, this is a **regression problem**.
+## Data Preprocessing
 
----
+The raw dataset required several preprocessing steps:
 
-## 🛠️ Tech Stack
+* Removed the unnecessary index column.
+* Converted engine size into a numeric value.
+* Preserved the engine unit (`cc` / `kWh`).
+* Converted mileage into numeric kilometers.
+* Converted prices into numeric values.
+* Renamed the model-year field to `year`.
+* Extracted `brand` and `model_name` from the listing title.
+* Removed records with missing prices.
 
-* **Python**
-* **Pandas** — data manipulation
-* **NumPy** — numerical computation
-* **Matplotlib** — data visualization
-* **Scikit-learn** — preprocessing, modeling and evaluation
-* **Jupyter Notebook** — experimentation and analysis
-* **Git/GitHub** — version control
+### Model Features
 
----
+The final model uses:
 
-## 🔍 Data Preparation
+**Numerical features**
 
-The raw dataset was not directly ready for machine learning.
+* `year`
+* `engine_value`
+* `Km_Driven`
 
-I performed the following preprocessing:
+**Categorical features**
 
-* Converted mileage strings such as `51,000 mi.` into numerical values.
-* Converted prices such as `$38,005` into numerical values.
-* Investigated missing values.
-* Replaced missing categorical values with `Unknown`.
-* Extracted **engine size** from unstructured engine descriptions.
-* Extracted **horsepower** where available.
-* Used median imputation for missing numerical engine features.
-* Applied one-hot encoding to categorical variables.
-* Used a train/test split to evaluate performance on unseen data.
+* `engine_unit`
+* `Engine_type`
+* `Transmission`
+* `brand`
+* `model_name`
 
----
+## Model
 
-## 📊 Modeling Approach
+The project uses a **Random Forest Regressor**.
 
-### 1. Baseline
+Categorical features are converted using `OneHotEncoder`, while numerical features are passed through the preprocessing pipeline.
 
-The baseline predicted the average training-set price for every test vehicle.
+The complete preprocessing and model are combined into a Scikit-learn `Pipeline`.
 
-| Metric | Result |
-| ------ | -----: |
-| MAE    | 35,276 |
-| RMSE   | 35,276 |
-| R²     | -0.002 |
+## Train/Test Split
 
-This established a reference point before introducing machine learning models.
+The dataset was divided into:
 
----
+* **80% training data**
+* **20% testing data**
 
-### 2. Linear Regression
+with `random_state=42`.
 
-The first machine learning model achieved:
+## Model Performance
 
-| Metric |  Result |
-| ------ | ------: |
-| MAE    |  25,845 |
-| RMSE   | 137,154 |
-| R²     |   0.080 |
+On the held-out test dataset:
 
-After extracting engine size and horsepower:
+| Metric |            Result |
+| ------ | ----------------: |
+| MAE    | **3.00 lakh PKR** |
+| RMSE   | **6.85 lakh PKR** |
+| R²     |        **0.9047** |
 
-| Metric |  Result |
-| ------ | ------: |
-| MAE    |  25,353 |
-| RMSE   | 135,565 |
-| R²     |   0.101 |
+The R² score indicates that the model explains a substantial portion of the variation in prices within this dataset.
 
-This showed that the engineered engine features provided measurable improvement.
+## Real-World Validation
 
----
+The trained model was also tested against five real-world OLX listings.
 
-### 3. Random Forest Regression
+| Vehicle                 | Model Prediction | Listing Price | Absolute Percentage Error |
+| ----------------------- | ---------------: | ------------: | ------------------------: |
+| Honda City 2018         |          34.79 L |       32.90 L |                     5.74% |
+| Honda City 2022         |          44.00 L |       47.50 L |                     7.37% |
+| Daihatsu Taft 2023      |          41.00 L |       40.99 L |                     0.02% |
+| Suzuki Wagon R 2023     |          36.61 L |       42.99 L |                    14.84% |
+| Toyota Aqua 2020 Hybrid |          66.82 L |       63.00 L |                     6.06% |
 
-A nonlinear model was then tested to capture relationships that Linear Regression could not represent effectively.
+The mean absolute percentage error across these five listings was approximately **6.81%**.
 
-**Final result:**
+This is only a small real-world validation sample and should not be interpreted as the model's general market accuracy.
 
-| Metric |      Result |
-| ------ | ----------: |
-| MAE    |  **16,433** |
-| RMSE   | **133,553** |
-| R²     |   **0.127** |
+## Example
 
-Random Forest substantially reduced the average absolute prediction error compared with Linear Regression.
+A sample prediction:
 
----
+```text
+Year: 2020
+Engine: 1300 cc
+Fuel: Petrol
+Transmission: Automatic
+Mileage: 40,000 km
+Brand: Toyota
+Model: Corolla
 
-## 🔎 Error Analysis
+Estimated Price: 44.84 lakh PKR
+```
 
-Rather than removing unusual observations simply to improve the metrics, I investigated the largest prediction errors.
+## Running the Project
 
-The extreme errors included vehicles such as:
+Clone the repository:
 
-* Bugatti Veyron
-* Porsche Carrera GT
-* Ford GT
-* Dodge Viper
-* Maserati Quattroporte
+```bash
+git clone <your-repository-url>
+cd used-car-price-prediction
+```
 
-These were not obvious data-entry errors. They represented genuinely rare and extremely expensive vehicles.
+Create and activate a virtual environment:
 
-The price distribution was also strongly right-skewed, with most vehicles concentrated at substantially lower prices and a small number of vehicles reaching several million dollars.
+```bash
+python -m venv venv
+```
 
-This explains why **RMSE remained very high despite the improvement in MAE**.
+Windows:
 
----
+```bash
+venv\Scripts\activate
+```
 
-## 💡 What I Learned
+Install dependencies:
 
-This project reinforced several practical machine learning concepts:
+```bash
+pip install -r requirements.txt
+```
 
-### Baselines matter
+Run the prediction script:
 
-A model should be compared against a simple baseline rather than judged in isolation.
+```bash
+python predict.py
+```
 
-### Feature engineering matters
+The script asks the user for vehicle information and returns an estimated price.
 
-Turning information hidden inside text into useful numerical features can improve model performance.
-
-### Model choice matters
-
-Random Forest captured nonlinear pricing relationships better than Linear Regression.
-
-### Metrics tell different stories
-
-MAE improved substantially, while RMSE remained high because of extreme prediction errors.
-
-### More tuning is not always the answer
-
-The experiments showed that the dataset itself was a significant limitation. Instead of endlessly tuning models to compensate for the data, the next iteration should use a more suitable dataset.
-
----
-
-## ⚠️ Current Limitation
-
-The final model achieved an R² of approximately **0.13**.
-
-This is not strong enough to present the model as a production-ready vehicle pricing system.
-
-Instead of hiding this limitation, the project documents **why the model struggled and what should be improved next**.
-
-The next iteration will use a more consistent used-car dataset with better price distribution and feature coverage.
-
----
-
-## 📁 Project Structure
+## Project Structure
 
 ```text
 used-car-price-prediction/
 │
 ├── data/
-│   └── cars.csv
+│   ├── cars.csv
+│   └── raw.csv
 │
 ├── notebooks/
-│   └── 01_data_analysis.ipynb
+│   ├── 01_data_analysis.ipynb
+│   └── 02_pakistan_car_price_prediction.ipynb
 │
-├── output.png
+├── predict.py
+├── rf_car_price_model.pkl
+├── requirements.txt
 ├── README.md
-└── requirements.txt
+└── output.png
 ```
 
-> The dataset is excluded from version control through `.gitignore`.
+## Limitations
 
----
+The current model does not consider several factors that can strongly affect real-world car prices, including:
 
-## 🚀 Future Improvements
+* Vehicle condition
+* Accident/repair history
+* City/location
+* Exact variant
+* Import status
+* Number of previous owners
+* Registration details
 
-* Use a more suitable used-car dataset
-* Improve feature engineering
-* Compare additional tree-based models
-* Analyze model errors by vehicle price range
-* Build a simple prediction interface
-* Deploy the final model as an API
+Because these features are not available in the current dataset, the model should be treated as a **price estimation tool rather than an exact market valuation system**.
 
----
+## Future Improvements
 
-## 👨‍💻 Project Focus
+Possible improvements include:
 
-This project was built to demonstrate more than model training.
+* Better vehicle model/variant normalization
+* Adding vehicle condition and accident history
+* Adding city/location
+* Adding registration/import information
+* Testing additional regression algorithms
+* Hyperparameter tuning
+* Building a web interface or API
+* Deploying the model for public use
 
-It focuses on:
+## Key Learning
 
-**Problem Solving • Data Preparation • Feature Engineering • Model Selection • Evaluation • Error Analysis • Critical Thinking**
+This project demonstrates an end-to-end machine learning workflow:
 
-The main objective was to understand **why a model performs the way it does**, not simply achieve a high metric.
+**Raw Data → Preprocessing → Feature Engineering → Model Training → Evaluation → Real-World Validation → Prediction**
 
----
-
-## 📌 Project Status
-
-**Completed — ML experimentation and problem analysis phase**
-
-The current version establishes the complete ML workflow and identifies the dataset as the primary limitation for further improvement.
+The project also highlights an important machine learning principle: strong test-set performance does not automatically guarantee perfect real-world predictions. Real-world validation and analysis of model limitations are necessary.
